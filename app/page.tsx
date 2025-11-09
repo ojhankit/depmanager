@@ -3,18 +3,26 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabaseClient";
 
 export default function LandingPage() {
   const supabase = createClientComponentClient();
 
+  // GitHub OAuth sign-in
   const handleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          scopes: 'read:user public_repo', // Make sure to request necessary scopes
+        },
+      });
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("GitHub sign-in error:", err);
+    }
   };
 
   return (
